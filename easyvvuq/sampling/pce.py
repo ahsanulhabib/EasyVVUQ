@@ -32,6 +32,7 @@ class PCESampler(BaseSamplingElement, sampler_name="PCE_sampler"):
                  count=0,
                  polynomial_order=4,
                  regression=False,
+                 rosenblatt=False,
                  rule="G",
                  sparse=False,
                  growth=False):
@@ -90,12 +91,12 @@ class PCESampler(BaseSamplingElement, sampler_name="PCE_sampler"):
         # List of the probability distributions of uncertain parameters
         params_distribution = list(vary.values())
         self.params_size = [len(d) for d in params_distribution]
+        self.n_params = sum(self.params_size)
 
         # Multivariate distribution
         self.distribution = cp.J(*params_distribution)
 
-        # The orthogonal polynomials corresponding to the joint distribution
-        self.P = cp.orth_ttr(polynomial_order, self.distribution)
+
 
         # The quadrature information
         self.quad_sparse = sparse
@@ -104,8 +105,22 @@ class PCESampler(BaseSamplingElement, sampler_name="PCE_sampler"):
         # Clenshaw-Curtis should be nested if sparse (#139 chaospy issue)
         self.quad_growth = growth
         cc = ['c', 'C', 'clenshaw_curtis', 'Clenshaw_Curtis']
-        if sparse and rule in cc:
+        if sparse and quadrature_rule in cc:
             self.quad_growth = True
+
+        #
+        # The orthogonal polynomials corresponding to the joint distribution
+        if rosenblatt:
+            dist_R = []
+            for i in range(self.n_params):
+                dist_R.append(cp.Normal())
+            dist_R = cp.J(*dist_R)
+            dist = dist_R
+
+            self.P = cp.orth_ttr(polynomial_order, self.distribution)
+        else:
+            self.P = cp.orth_ttr(polynomial_order, self.distribution)
+            dist = self.distribution
 
         # To determinate the PCE vrainte to use
         self.regression = regression
@@ -115,23 +130,25 @@ class PCESampler(BaseSamplingElement, sampler_name="PCE_sampler"):
             # Change the default rule
             if rule == "G":
                 self.rule = "M"
-
             # Generates samples
             self._n_samples = 2 * len(self.P)
             nodes = cp.generate_samples(order=self._n_samples,
-                                        domain=self.distribution,
+                                        domain=dist,
                                         rule=self.rule)
-
         # Projection variante (Pseudo-spectral method)
         else:
             # Nodes and weights for the integration
-            nodes, _ = cp.generate_quadrature(order=polynomial_order,
-                                              dist=self.distribution,
+            nodes, weights = cp.generate_quadrature(order=polynomial_order,
+                                              dist=dist,
                                               rule=self.rule,
                                               sparse=sparse,
                                               growth=self.quad_growth)
             # Number of samples
             self._n_samples = len(nodes[0])
+
+        if rosenblatt:
+            nodes = self.distribution.inv(dist_R.fwd(nodes))
+        self.weights = weights
 
         # Reorganize nodes according to params type: scalar (float, integer) or list
         self._nodes = []
@@ -144,7 +161,7 @@ class PCESampler(BaseSamplingElement, sampler_name="PCE_sampler"):
             else:
                 self._nodes.append(nodes[ipar:ipar + j].T.tolist())
             ipar += j
-
+        self.nodes = nodes
         # Fast forward to specified count, if possible
         self.count = 0
         if self.count >= self._n_samples:

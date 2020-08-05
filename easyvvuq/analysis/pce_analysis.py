@@ -86,16 +86,18 @@ class PCEAnalysis(BaseAnalysisElement):
         regression = self.sampler.regression
 
         # Compute nodes (and weights)
-        if regression:
-            nodes = cp.generate_samples(order=self.sampler.n_samples,
-                                        domain=self.sampler.distribution,
-                                        rule=self.sampler.rule)
-        else:
-            nodes, weights = cp.generate_quadrature(order=self.sampler.polynomial_order,
-                                                    dist=self.sampler.distribution,
-                                                    rule=self.sampler.rule,
-                                                    sparse=self.sampler.quad_sparse,
-                                                    growth=self.sampler.quad_growth)
+#        if regression:
+#            nodes = cp.generate_samples(order=self.sampler.n_samples,
+#                                        domain=self.sampler.distribution,
+#                                        rule=self.sampler.rule)
+#        else:
+#            nodes, weights = cp.generate_quadrature(order=self.sampler.polynomial_order,
+#                                                    dist=self.sampler.distribution,
+#                                                    rule=self.sampler.rule,
+#                                                    sparse=self.sampler.quad_sparse,
+#                                                    growth=self.sampler.quad_growth)
+#
+#            nodes = self.distribution.inv(dist_R.fwd(nodes))
 
         # Extract output values for each quantity of interest from Dataframe
         samples = {k: [] for k in qoi_cols}
@@ -113,7 +115,8 @@ class PCEAnalysis(BaseAnalysisElement):
                         samples[k][i] = samples[k][i].astype("float64")
                 fit = cp.fit_regression(P, nodes, samples[k], "T")
             else:
-                fit = cp.fit_quadrature(P, nodes, weights, samples[k])
+                fit = cp.fit_quadrature(P, self.sampler.nodes, self.sampler.weights, samples[k])
+
 
             # Statistical moments
             mean = cp.E(fit, self.sampler.distribution)
