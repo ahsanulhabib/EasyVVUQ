@@ -6,7 +6,6 @@ SALib
 pytest
 pytest-pep8
 SQLAlchemy
-sqlalchemy-utils
 jsonpickle
 cerberus
 dask[complete]
@@ -14,6 +13,4 @@ dask_jobqueue
 cloudpickle
 scikit-learn
 jinja2
-fsspec
-msmb_theme
 kubernetes

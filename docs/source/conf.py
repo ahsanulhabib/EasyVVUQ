@@ -12,8 +12,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath('../easyvvuq'))
 
 
 # -- Project information -----------------------------------------------------
@@ -23,7 +22,7 @@ copyright = '2020, David W. Wright, Robin A. Richardson, Vytautas Jancauskas, Ja
 author = 'David W. Wright, Robin A. Richardson, Vytautas Jancauskas, Jalal Lakhlili'
 
 # The full version, including alpha/beta/rc tags
-release = '0.6'
+release = '0.7'
 
 
 # -- General configuration ---------------------------------------------------
@@ -33,7 +32,9 @@ master_doc = 'index'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc','sphinx.ext.napoleon']
+extensions = ['sphinx.ext.autodoc','sphinx.ext.napoleon', 'sphinx.ext.autosectionlabel']
+
+autosectionlabel_prefix_document = True
 
 napoleon_google_docstring = False
 napoleon_use_param = False
@@ -53,13 +54,9 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_favicon = 'images/favicon.ico'
+html_favicon = '../images/favicon.ico'
 
-html_theme = 'msmb_theme'   
-
-import msmb_theme   
-
-html_theme_path = [msmb_theme.get_html_theme_path()]
+html_theme = 'alabaster'   
 
 html_sidebars = {
     '**': [
@@ -74,9 +71,6 @@ html_theme_options = {
     "github_user": "UCL-CCS",
     "github_repo": "EasyVVUQ",
     "github_banner": True,
-    "logo": "circle-logo.svg",
-    "logo_name": True,
-    "logo_text_align": "center",
     "description": "Verification, validation and uncertainty quantification for HPC simulations"
 }
 
@@ -85,4 +79,4 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-html_logo = "../_static/easyvvuq_logo.png"
+html_logo = "../images/circle-logo.png"

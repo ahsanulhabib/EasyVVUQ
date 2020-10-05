@@ -1,8 +1,6 @@
-from .base import BaseAction
-from .execute_local import ExecuteLocal, ExecuteLocalV2
-from .execute_kubernetes import ExecuteKubernetes
-from .execute_slurm import ExecuteSLURM
-from .action_statuses import ActionStatuses
+from easyvvuq.decoders.json import JSONDecoder
+import logging
+import yaml
 
 __copyright__ = """
 
@@ -25,3 +23,12 @@ __copyright__ = """
 
 """
 __license__ = "LGPL"
+
+
+logger = logging.Logger(__name__)
+
+
+class YAMLDecoder(JSONDecoder, decoder_name="yaml"):
+    def _get_raw_data(self, out_path):
+        with open(out_path) as fd:
+            return yaml.load(fd, yaml.SafeLoader)
